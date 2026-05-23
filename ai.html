@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Chatbot - HealthSphere</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="single-wrap">
+    <article class="phone hs-home">
+      <div class="body">
+        <div class="hs-layout">
+          <nav class="hs-sidebar" aria-label="Home sections">
+            <a class="hs-side-link" href="patient_home.html">
+              <span><i class="fa-solid fa-house"></i></span>
+              <small>Home</small>
+            </a>
+            <a class="hs-side-link active" href="ai.html">
+              <span><i class="fa-solid fa-robot"></i></span>
+              <small>AI Chatbot</small>
+            </a>
+            <a class="hs-side-link" href="doctors.html">
+              <span><i class="fa-solid fa-user-doctor"></i></span>
+              <small>Find Doctors</small>
+            </a>
+            <a class="hs-side-link" href="bed_availability.html">
+              <span><i class="fa-solid fa-bed"></i></span>
+              <small>Bed Availability</small>
+            </a>
+            <a class="hs-side-link" href="appointments.html">
+              <span><i class="fa-solid fa-calendar-check"></i></span>
+              <small>My Appointments</small>
+            </a>
+            <a class="hs-side-link" href="emergency.html">
+              <span><i class="fa-solid fa-truck-medical"></i></span>
+              <small>Emergency</small>
+            </a>
+            <a class="hs-side-link" href="prescriptions.html">
+              <span><i class="fa-solid fa-prescription-bottle-medical"></i></span>
+              <small>Prescriptions</small>
+            </a>
+          
+                        <a class="hs-side-link" href="form.html">
+              <span><i class="fa-solid fa-clipboard-list"></i></span>
+              <small>Form</small>
+            </a><a class="hs-side-link" href="profile.html">
+              <span><i class="fa-regular fa-user"></i></span>
+              <small>Profile</small>
+            </a>
+            </nav>
+
+          <section class="hs-main">
+            <div class="hs-brand-row">
+              <div class="hs-brand-logo"><i class="fa-solid fa-heart-pulse"></i></div>
+              <div class="hs-brand-name">HealthSphere</div>
+            </div>
+
+            <header class="hs-greet-row">
+              <div>
+                <p class="hs-hello">Section</p>
+                <h2 class="hs-name">AI Chatbot</h2>
+              </div>
+            </header>
+
+            <section class="hs-location-card">
+              <section class="hs-ai-shell">
+                <div class="hs-ai-top">
+                  <h3>Speak with HealthSphere AI</h3>
+                  <p>Tap the center orb to dictate. Your speech will appear in the textbox below.</p>
+                </div>
+
+                <div class="hs-ai-chat" id="aiChat" aria-live="polite">
+                  <div class="hs-chat-bubble bot">
+                    <p>Hello! How can I help you today?</p>
+                    <span>HealthSphere AI</span>
+                  </div>
+                </div>
+                <div class="hs-typing is-hidden" id="typingIndicator" aria-live="polite" aria-hidden="true">
+                  <span class="hs-typing-dot"></span>
+                  <span class="hs-typing-dot"></span>
+                  <span class="hs-typing-dot"></span>
+                  <span class="hs-typing-text">HealthSphere AI is typing</span>
+                </div>
+
+                <div class="hs-ai-center">
+                  <button class="hs-voice-btn" id="voiceBtn" type="button" aria-label="Start voice input">
+                    <i class="fa-solid fa-microphone"></i>
+                  </button>
+                  <div class="hs-voice-status" id="voiceStatus">Tap to speak</div>
+                </div>
+
+                <div class="hs-ai-input">
+                  <label class="hs-ai-label" for="aiText">Your message</label>
+                  <textarea id="aiText" class="hs-ai-text" rows="3" placeholder="Your spoken text appears here..."></textarea>
+
+                <div class="hs-ai-attachments">
+                  <label class="hs-ai-label" for="aiFiles">Attachments</label>
+                  <div class="hs-ai-attach-row">
+                    <input id="aiFiles" class="hs-ai-file" type="file" multiple accept=".pdf,.png,.jpg,.jpeg,.txt,.doc,.docx" />
+                    <button class="hs-ai-attach-btn" id="aiAttachBtn" type="button">
+                      <i class="fa-solid fa-paperclip"></i>
+                      Attach files
+                    </button>
+                     
+                  </div>
+                  <div id="aiFileList" class="hs-ai-file-list">No files attached.</div>
+                    
+                </div>
+
+                  <button class="hs-ai-send" id="aiSend" type="button">Send</button>
+                </div>
+              </section>
+            </section>
+          </section>
+        </div>
+      </div>
+    </article>
+  </main>
+
+  <script>
+    (function () {
+      var voiceBtn = document.getElementById("voiceBtn");
+      var voiceStatus = document.getElementById("voiceStatus");
+      var aiText = document.getElementById("aiText");
+      var aiSend = document.getElementById("aiSend");
+      var aiChat = document.getElementById("aiChat");
+      var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      var aiFiles = document.getElementById("aiFiles");
+      var aiAttachBtn = document.getElementById("aiAttachBtn");
+      var aiFileList = document.getElementById("aiFileList");
+      var typingIndicator = document.getElementById("typingIndicator");
+      var selectedFiles = [];
+
+      if (!SpeechRecognition) {
+        voiceBtn.disabled = true;
+        voiceBtn.setAttribute("aria-disabled", "true");
+        voiceStatus.textContent = "Voice input not supported in this browser.";
+        return;
+      }
+
+      var recognition = new SpeechRecognition();
+      recognition.lang = "en-US";
+      recognition.interimResults = false;
+      recognition.continuous = false;
+
+      var isListening = false;
+
+      voiceBtn.addEventListener("click", function () {
+        if (isListening) {
+          recognition.stop();
+          return;
+        }
+        recognition.start();
+      });
+
+      recognition.onstart = function () {
+        isListening = true;
+        voiceBtn.classList.add("listening");
+        voiceStatus.textContent = "Listening...";
+      };
+
+      recognition.onend = function () {
+        isListening = false;
+        voiceBtn.classList.remove("listening");
+        if (voiceStatus.textContent === "Listening...") {
+          voiceStatus.textContent = "Tap to speak";
+        }
+      };
+
+      recognition.onerror = function () {
+        isListening = false;
+        voiceBtn.classList.remove("listening");
+        voiceStatus.textContent = "Could not capture audio. Try again.";
+      };
+
+      recognition.onresult = function (event) {
+        var transcript = event.results[0][0].transcript;
+        aiText.value = transcript;
+        voiceStatus.textContent = "Captured. Tap to speak again.";
+      };
+
+      function formatBytes(bytes) {
+        if (!bytes && bytes !== 0) return "";
+        var units = ["B", "KB", "MB", "GB"];
+        var size = bytes;
+        var unitIndex = 0;
+        while (size >= 1024 && unitIndex < units.length - 1) {
+          size /= 1024;
+          unitIndex += 1;
+        }
+        return size.toFixed(size < 10 && unitIndex > 0 ? 1 : 0) + " " + units[unitIndex];
+      }
+
+      function renderFileList() {
+        if (!aiFileList) return;
+        if (!selectedFiles.length) {
+          aiFileList.textContent = "No files attached.";
+          return;
+        }
+        aiFileList.innerHTML = "";
+        selectedFiles.forEach(function (file, index) {
+          var item = document.createElement("div");
+          item.className = "hs-ai-file-item";
+
+          var name = document.createElement("span");
+          name.className = "hs-ai-file-name";
+          name.textContent = file.name + " (" + formatBytes(file.size) + ")";
+
+          var removeBtn = document.createElement("button");
+          removeBtn.type = "button";
+          removeBtn.className = "hs-ai-file-remove";
+          removeBtn.textContent = "Remove";
+          removeBtn.setAttribute("data-index", String(index));
+
+          removeBtn.addEventListener("click", function () {
+            var idx = Number(this.getAttribute("data-index"));
+            if (Number.isNaN(idx)) return;
+            selectedFiles.splice(idx, 1);
+            aiFiles.value = "";
+            renderFileList();
+          });
+
+          item.appendChild(name);
+          item.appendChild(removeBtn);
+          aiFileList.appendChild(item);
+        });
+      }
+
+      if (aiAttachBtn && aiFiles) {
+        aiAttachBtn.addEventListener("click", function () {
+          aiFiles.click();
+        });
+
+        aiFiles.addEventListener("change", function () {
+          var nextFiles = Array.from(aiFiles.files || []);
+          if (nextFiles.length > 5) {
+            nextFiles = nextFiles.slice(0, 5);
+            voiceStatus.textContent = "Only the first 5 files were kept.";
+          }
+          selectedFiles = nextFiles;
+          renderFileList();
+        });
+      }
+
+      function appendBubble(text, type, label) {
+        var bubble = document.createElement("div");
+        bubble.className = "hs-chat-bubble " + type;
+        var p = document.createElement("p");
+        p.textContent = text;
+        var meta = document.createElement("span");
+        meta.textContent = label;
+        bubble.appendChild(p);
+        bubble.appendChild(meta);
+        aiChat.appendChild(bubble);
+        aiChat.scrollTop = aiChat.scrollHeight;
+      }
+
+      function setTyping(isTyping) {
+        if (!typingIndicator) return;
+        typingIndicator.classList.toggle("is-hidden", !isTyping);
+        typingIndicator.setAttribute("aria-hidden", isTyping ? "false" : "true");
+        aiChat.scrollTop = aiChat.scrollHeight;
+      }
+
+      function getBotReply(message) {
+        var msg = message.toLowerCase();
+        if (msg.includes("good morning")) {
+          return "Good morning! Hope you are feeling great today. How can I assist you?";
+        }
+        return "Thanks for your message. I am here to help with appointments, reports, or symptoms.";
+      }
+
+      function resolveApiBaseUrl() {
+        var params = new URLSearchParams(window.location.search);
+        var fromQuery = params.get("apiBase");
+        var fromStorage = window.localStorage ? window.localStorage.getItem("HS_API_BASE") : "";
+        var fromGlobal = window.HS_API_BASE;
+        var base = fromQuery || fromStorage || fromGlobal || "http://localhost:5000";
+
+        if (fromQuery && window.localStorage) {
+          window.localStorage.setItem("HS_API_BASE", fromQuery);
+        }
+
+        return base.replace(/\/+$/, "");
+      }
+
+      var API_BASE_URL = resolveApiBaseUrl();
+
+      setTyping(false);
+
+      aiSend.addEventListener("click", function () {
+        var message = aiText.value.trim();
+        if (!message && !selectedFiles.length) {
+          voiceStatus.textContent = "Type, speak, or attach files before sending.";
+          return;
+        }
+
+        aiSend.disabled = true;
+        aiSend.textContent = "Sending...";
+        voiceStatus.textContent = "Sending to backend...";
+
+        var formData = new FormData();
+        formData.append("message", message);
+        selectedFiles.forEach(function (file) {
+          formData.append("files", file, file.name);
+        });
+
+        var displayText = message || "Shared files.";
+        if (selectedFiles.length) {
+          var fileNames = selectedFiles.map(function (file) {
+            return file.name;
+          });
+          displayText += "\nAttachments: " + fileNames.join(", ");
+        }
+        appendBubble(displayText, "user", "You");
+
+        setTyping(true);
+        fetch(API_BASE_URL + "/api/chat", {
+          method: "POST",
+          body: formData
+        })
+          .then(function (response) {
+            if (!response.ok) {
+              return response.text().then(function (rawText) {
+                var errorMessage = "Request failed.";
+                try {
+                  var data = JSON.parse(rawText);
+                  if (data && data.error) {
+                    errorMessage = data.error;
+                  }
+                } catch (_err) {
+                  if (rawText) {
+                    errorMessage = rawText;
+                  }
+                }
+                throw new Error(errorMessage);
+              });
+            }
+            return response.json();
+          })
+          .then(function (data) {
+            var reply = data && data.reply ? data.reply : getBotReply(message);
+            appendBubble(reply, "bot", "HealthSphere AI");
+            voiceStatus.textContent = "Sent.";
+          })
+          .catch(function (err) {
+            var rawMessage = err && err.message ? err.message : "";
+            var friendlyMessage = "Sorry, I couldn't reach the AI service. Please try again.";
+
+            if (rawMessage && /failed to fetch|networkerror|load failed|refused to connect/i.test(rawMessage)) {
+              friendlyMessage =
+                "I couldn't reach the backend at " +
+                API_BASE_URL +
+                ". Please make sure the patient backend is running.";
+            } else if (rawMessage) {
+              friendlyMessage = rawMessage;
+            }
+
+            appendBubble(friendlyMessage, "bot", "HealthSphere AI");
+            voiceStatus.textContent = rawMessage || "Send failed.";
+          })
+          .finally(function () {
+            setTyping(false);
+            aiText.value = "";
+            aiFiles.value = "";
+            selectedFiles = [];
+            renderFileList();
+            aiSend.disabled = false;
+            aiSend.textContent = "Send";
+          });
+      });
+    })();
+  </script>
+</body>
+</html>
+
+
+

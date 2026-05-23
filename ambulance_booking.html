@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Book Ambulance - City Hospital</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="single-wrap">
+    <article class="phone hs-home">
+      <div class="body">
+        <div class="hs-layout">
+          <nav class="hs-sidebar" aria-label="Home sections">
+            <a class="hs-side-link" href="patient_home.html">
+              <span><i class="fa-solid fa-house"></i></span>
+              <small>Home</small>
+            </a>
+            <a class="hs-side-link" href="ai.html">
+              <span><i class="fa-solid fa-robot"></i></span>
+              <small>AI Chatbot</small>
+            </a>
+            <a class="hs-side-link" href="doctors.html">
+              <span><i class="fa-solid fa-user-doctor"></i></span>
+              <small>Find Doctors</small>
+            </a>
+            <a class="hs-side-link" href="bed_availability.html">
+              <span><i class="fa-solid fa-bed"></i></span>
+              <small>Bed Availability</small>
+            </a>
+            <a class="hs-side-link" href="appointments.html">
+              <span><i class="fa-solid fa-calendar-check"></i></span>
+              <small>My Appointments</small>
+            </a>
+            <a class="hs-side-link active" href="emergency.html">
+              <span><i class="fa-solid fa-truck-medical"></i></span>
+              <small>Emergency</small>
+            </a>
+            <a class="hs-side-link" href="prescriptions.html">
+              <span><i class="fa-solid fa-prescription-bottle-medical"></i></span>
+              <small>Prescriptions</small>
+            </a>
+          
+                        <a class="hs-side-link" href="form.html">
+              <span><i class="fa-solid fa-clipboard-list"></i></span>
+              <small>Form</small>
+            </a><a class="hs-side-link" href="profile.html">
+              <span><i class="fa-regular fa-user"></i></span>
+              <small>Profile</small>
+            </a>
+            </nav>
+
+          <section class="hs-main">
+            <div class="hs-brand-row">
+              <div class="hs-brand-logo"><i class="fa-solid fa-heart-pulse"></i></div>
+              <div class="hs-brand-name">HealthSphere</div>
+            </div>
+
+            <header class="hs-greet-row">
+              <div>
+                <p class="hs-hello">Emergency</p>
+                <h2 class="hs-name">Book Ambulance</h2>
+              </div>
+            </header>
+
+            <section class="hs-location-card">
+              <div class="hs-location-row">
+                <div class="hs-location-icon"><i class="fa-solid fa-hospital"></i></div>
+                <div>
+                  <h4>City Hospital</h4>
+                  <p>M.G. Road, Bengaluru</p>
+                </div>
+              </div>
+            </section>
+
+            <section class="hs-location-card">
+              <div class="hs-location-row">
+                <div class="hs-location-icon"><i class="fa-solid fa-user"></i></div>
+                <div>
+                  <h4>Requester Details</h4>
+                  <p>Please confirm your contact and pickup info.</p>
+                </div>
+              </div>
+              <p id="ambulanceError" class="auth-error" hidden></p>
+              <input id="ambulanceName" class="input" type="text" placeholder="Full name" />
+              <input id="ambulancePhone" class="input" type="tel" placeholder="Phone number" />
+              <textarea id="ambulancePickup" class="hs-ai-text" rows="3" placeholder="Pickup location or landmark"></textarea>
+              <textarea id="ambulanceReason" class="hs-ai-text" rows="3" placeholder="Emergency details for the ambulance team"></textarea>
+              <button id="confirmAmbulanceBtn" class="btn danger" type="button">Confirm Ambulance Booking</button>
+            </section>
+
+            <a class="btn btn-secondary" href="ambulance_hospitals.html">Back to hospitals</a>
+          </section>
+        </div>
+      </div>
+    </article>
+  </main>
+
+  <div id="ambulanceConfirmModal" class="hs-modal" aria-hidden="true" role="dialog" aria-labelledby="ambulanceConfirmTitle">
+    <div class="hs-modal-card" style="max-width: 420px; text-align: center;">
+      <div class="hs-modal-avatar" style="margin: 0 auto; background: #e6f4ea; color: #1f8f4e;">
+        <i class="fa-solid fa-check"></i>
+      </div>
+      <h3 id="ambulanceConfirmTitle">Request Sent</h3>
+      <p>Your request has been sent to the hospital.</p>
+      <button id="ambulanceOkBtn" class="btn" type="button">OK</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    (function () {
+      var SUPABASE_URL = "https://nfmzosvedtieicnfbmlh.supabase.co";
+      var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mbXpvc3ZlZHRpZWljbmZibWxoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMzk1MDgsImV4cCI6MjA5MDYxNTUwOH0.UWGk4L8AQu-5NfpknMKizvFmAcyX6QgUmqOGSr1G6Wc";
+      var AMBULANCE_TABLE = "city_hospital_ambulance_requests";
+
+      function getSupabaseClient() {
+        if (typeof supabase === "undefined" || !supabase.createClient) {
+          return null;
+        }
+        return supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+
+      function setValue(id, value) {
+        var el = document.getElementById(id);
+        if (!el) return;
+        if (value) {
+          el.value = value;
+        }
+      }
+
+      function showError(message) {
+        var errorEl = document.getElementById("ambulanceError");
+        if (!errorEl) return;
+        errorEl.textContent = message || "";
+        errorEl.hidden = !message;
+      }
+
+      function getStoredEmergencyLocation() {
+        try {
+          var raw = localStorage.getItem("hsEmergencyLocation");
+          return raw ? JSON.parse(raw) : null;
+        } catch (error) {
+          console.warn("Unable to read emergency location", error);
+          return null;
+        }
+      }
+
+      async function hydratePatientDetails() {
+        var client = getSupabaseClient();
+        if (!client) return;
+
+        var userResult = await client.auth.getUser();
+        if (userResult.error || !userResult.data || !userResult.data.user) {
+          return;
+        }
+
+        var userId = userResult.data.user.id;
+        var profileResult = await client
+          .from("patient_profile")
+          .select("name,phone,email")
+          .eq("user_id", userId)
+          .maybeSingle();
+
+        if (profileResult.error) {
+          return;
+        }
+
+        var profile = profileResult.data || {};
+        setValue("ambulanceName", profile.name || profile.email || "");
+        setValue("ambulancePhone", profile.phone || "");
+
+        var location = getStoredEmergencyLocation();
+        if (location && location.label) {
+          setValue("ambulancePickup", location.label);
+        }
+      }
+
+      var confirmBtn = document.getElementById("confirmAmbulanceBtn");
+      var modal = document.getElementById("ambulanceConfirmModal");
+      var okBtn = document.getElementById("ambulanceOkBtn");
+      var hospitalName = "City Hospital";
+
+      async function saveAmbulanceRequest() {
+        var client = getSupabaseClient();
+        if (!client) return { ok: false, message: "Supabase is not available right now." };
+
+        var userResult = await client.auth.getUser();
+        if (userResult.error || !userResult.data || !userResult.data.user) {
+          return { ok: false, message: "Please log in as a patient before sending a request." };
+        }
+
+        var user = userResult.data.user;
+        var nameInput = document.getElementById("ambulanceName");
+        var phoneInput = document.getElementById("ambulancePhone");
+        var pickupInput = document.getElementById("ambulancePickup");
+        var reasonInput = document.getElementById("ambulanceReason");
+        var nameValue = nameInput ? nameInput.value.trim() : "";
+        var phoneValue = phoneInput ? phoneInput.value.trim() : "";
+        var pickupValue = pickupInput ? pickupInput.value.trim() : "";
+        var reasonValue = reasonInput ? reasonInput.value.trim() : "";
+
+        if (!nameValue || !phoneValue || !pickupValue || !reasonValue) {
+          return { ok: false, message: "Please complete your name, phone, pickup location, and emergency details." };
+        }
+
+        var profileResult = await client
+          .from("patient_profile")
+          .select("user_id,name,phone,email")
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (profileResult.error) {
+          return { ok: false, message: profileResult.error.message || "Unable to verify patient profile." };
+        }
+
+        if (!profileResult.data) {
+          return { ok: false, message: "Only registered patients can request an ambulance. Please complete patient signup first." };
+        }
+
+        var pendingResult = await client
+          .from(AMBULANCE_TABLE)
+          .select("id,status")
+          .eq("user_id", user.id)
+          .eq("hospital_name", hospitalName)
+          .eq("status", "pending")
+          .limit(1);
+
+        if (!pendingResult.error && pendingResult.data && pendingResult.data.length > 0) {
+          return { ok: false, message: "You already have a pending ambulance request with this hospital." };
+        }
+
+        var storedLocation = getStoredEmergencyLocation();
+        var insertPayload = {
+          user_id: user.id,
+          hospital_name: hospitalName,
+          phone: phoneValue || null,
+          status: "pending",
+          patient_name: nameValue,
+          pickup_location: pickupValue,
+          emergency_note: reasonValue,
+          verified_patient: true
+        };
+
+        if (storedLocation && typeof storedLocation.latitude === "number") {
+          insertPayload.latitude = storedLocation.latitude;
+        }
+
+        if (storedLocation && typeof storedLocation.longitude === "number") {
+          insertPayload.longitude = storedLocation.longitude;
+        }
+
+        var insertResult = await client
+          .from(AMBULANCE_TABLE)
+          .insert(insertPayload)
+          .select("id,hospital_name,status,created_at")
+          .single();
+
+        if (insertResult.error) {
+          var fallbackResult = await client
+            .from(AMBULANCE_TABLE)
+            .insert({
+              user_id: user.id,
+              hospital_name: hospitalName,
+              phone: phoneValue || null,
+              status: "pending"
+            })
+            .select("id,hospital_name,status,created_at")
+            .single();
+
+          if (fallbackResult.error) {
+            return { ok: false, message: fallbackResult.error.message || "Unable to send ambulance request." };
+          }
+
+          if (!fallbackResult.data || !fallbackResult.data.id) {
+            return { ok: false, message: "Supabase did not confirm that the ambulance request was saved." };
+          }
+
+          return {
+            ok: true,
+            requestId: fallbackResult.data.id
+          };
+        }
+
+        if (!insertResult.data || !insertResult.data.id) {
+          return { ok: false, message: "Supabase did not confirm that the ambulance request was saved." };
+        }
+
+        return {
+          ok: true,
+          requestId: insertResult.data.id
+        };
+      }
+
+      if (confirmBtn && modal) {
+        confirmBtn.addEventListener("click", async function () {
+          showError("");
+          confirmBtn.disabled = true;
+          var result = await saveAmbulanceRequest();
+          confirmBtn.disabled = false;
+
+          if (!result.ok) {
+            showError(result.message || "Unable to send ambulance request.");
+            return;
+          }
+
+          console.log("Ambulance request saved", result.requestId || "unknown");
+          modal.classList.add("show");
+          modal.setAttribute("aria-hidden", "false");
+        });
+      }
+
+      if (okBtn) {
+        okBtn.addEventListener("click", function () {
+          window.location.href = "emergency.html";
+        });
+      }
+
+      hydratePatientDetails();
+    })();
+  </script>
+</body>
+</html>
+
+
+

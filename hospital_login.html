@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hospital Login</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --primary: #0b4ea2;
+      --primary-dark: #083a79;
+      --accent: #17a2b8;
+      --text: #14213d;
+      --muted: #5d6f8f;
+      --surface: #ffffff;
+      --surface-soft: #eef4ff;
+      --line: #d9e3f3;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: Poppins, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(23, 162, 184, 0.22), transparent 28%),
+        linear-gradient(135deg, #e7eefb, #f8fbff 56%, #e3f7fb);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .auth-shell {
+      width: min(100%, 980px);
+      min-height: 640px;
+      border-radius: 28px;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      background: var(--surface);
+      box-shadow: 0 24px 60px rgba(19, 45, 92, 0.16);
+    }
+
+    .brand-panel {
+      padding: 48px;
+      background: linear-gradient(160deg, #0b4ea2 0%, #0d5fc4 52%, #17a2b8 100%);
+      color: #fff;
+      display: grid;
+      align-content: space-between;
+      gap: 24px;
+    }
+
+    .brand-badge {
+      width: 78px;
+      height: 78px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.16);
+      position: relative;
+      backdrop-filter: blur(3px);
+    }
+
+    .brand-badge::before,
+    .brand-badge::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      border-radius: 999px;
+    }
+
+    .brand-badge::before {
+      width: 16px;
+      height: 42px;
+    }
+
+    .brand-badge::after {
+      width: 42px;
+      height: 16px;
+    }
+
+    .brand-copy h1 {
+      font-size: clamp(34px, 4vw, 48px);
+      line-height: 1.05;
+      margin-top: 18px;
+      margin-bottom: 12px;
+    }
+
+    .brand-copy p,
+    .brand-points li {
+      color: rgba(255, 255, 255, 0.88);
+      line-height: 1.6;
+    }
+
+    .brand-points {
+      list-style: none;
+      display: grid;
+      gap: 14px;
+    }
+
+    .brand-points li {
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+    }
+
+    .login-panel {
+      padding: 40px;
+      display: grid;
+      align-content: center;
+    }
+
+    .top-note {
+      margin-bottom: 24px;
+    }
+
+    .top-note h2 {
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    .top-note p {
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .auth-switch {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      background: var(--surface-soft);
+      padding: 6px;
+      border-radius: 16px;
+      margin-bottom: 26px;
+    }
+
+    .auth-tab {
+      border: 0;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      background: transparent;
+      color: #33415f;
+      transition: 0.2s ease;
+    }
+
+    .auth-tab.active {
+      background: #fff;
+      color: var(--primary);
+      box-shadow: 0 10px 18px rgba(11, 78, 162, 0.12);
+    }
+
+    .auth-tab.patient-link {
+      text-decoration: none;
+      text-align: center;
+    }
+
+    .auth-tab.hospital-link {
+      text-decoration: none;
+      text-align: center;
+    }
+
+    form {
+      display: grid;
+      gap: 16px;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .input {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 16px;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(11, 78, 162, 0.12);
+    }
+
+    .helper {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .btn {
+      border: 0;
+      border-radius: 16px;
+      padding: 15px 18px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      cursor: pointer;
+      box-shadow: 0 14px 24px rgba(11, 78, 162, 0.2);
+    }
+
+    .error {
+      min-height: 20px;
+      color: #c52d2d;
+      font-size: 13px;
+    }
+
+    @media (max-width: 860px) {
+      .auth-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .brand-panel,
+      .login-panel {
+        padding: 28px;
+      }
+    }
+
+    @media (max-width: 520px) {
+      body {
+        padding: 12px;
+      }
+
+      .brand-panel,
+      .login-panel {
+        padding: 22px;
+      }
+
+      .top-note h2 {
+        font-size: 28px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="auth-shell">
+    <section class="brand-panel">
+      <div class="brand-copy">
+        <div class="brand-badge" aria-hidden="true"></div>
+        <h1>HealthSphere Hospital Console</h1>
+        <p>Secure access for hospitals to manage admissions, staff workflows, and patient-facing services from one place.</p>
+      </div>
+
+     
+    </section>
+
+    <section class="login-panel">
+      <div class="top-note">
+        <h2>Hospital Login</h2>
+        
+      </div>
+
+      <div class="auth-switch" role="tablist" aria-label="Login type">
+        <a class="auth-tab patient-link" href="../patient_frontend/login.html?role=patient" role="tab" aria-selected="false">Patient</a>
+        <a class="auth-tab active hospital-link" href="hospital_login.html" role="tab" aria-selected="true">Hospital</a>
+      </div>
+
+      <form id="hospitalLoginForm" novalidate>
+        <div class="field">
+          <label for="hospitalId">Hospital ID</label>
+          <input id="hospitalId" class="input" type="text" placeholder="Enter hospital ID" required />
+        </div>
+
+        <div class="field">
+          <label for="hospitalPassword">Password</label>
+          <input id="hospitalPassword" class="input" type="password" placeholder="Enter password" required />
+        </div>
+
+        
+        <p id="loginError" class="error" aria-live="polite"></p>
+
+        <button class="btn" type="submit">Submit</button>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    document.getElementById("hospitalLoginForm").addEventListener("submit", function (event) {
+      event.preventDefault();
+
+      var hospitalId = document.getElementById("hospitalId").value.trim();
+      var password = document.getElementById("hospitalPassword").value.trim();
+      var error = document.getElementById("loginError");
+
+      if (hospitalId !== "Hospital@234" || password !== "123456") {
+        error.textContent = "Invalid hospital ID or password.";
+        return;
+      }
+
+      error.textContent = "";
+      window.location.href = "hospital_home.html";
+    });
+  </script>
+</body>
+</html>
+

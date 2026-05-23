@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Find Doctors - HealthSphere</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="single-wrap">
+    <article class="phone hs-home">
+      <div class="body">
+        <div class="hs-layout">
+          <nav class="hs-sidebar" aria-label="Home sections">
+            <a class="hs-side-link" href="patient_home.html">
+              <span><i class="fa-solid fa-house"></i></span>
+              <small>Home</small>
+            </a>
+            <a class="hs-side-link" href="ai.html">
+              <span><i class="fa-solid fa-robot"></i></span>
+              <small>AI Chatbot</small>
+            </a>
+            <a class="hs-side-link active" href="doctors.html">
+              <span><i class="fa-solid fa-user-doctor"></i></span>
+              <small>Find Doctors</small>
+            </a>
+            <a class="hs-side-link" href="bed_availability.html">
+              <span><i class="fa-solid fa-bed"></i></span>
+              <small>Bed Availability</small>
+            </a>
+            <a class="hs-side-link" href="appointments.html">
+              <span><i class="fa-solid fa-calendar-check"></i></span>
+              <small>My Appointments</small>
+            </a>
+            <a class="hs-side-link" href="emergency.html">
+              <span><i class="fa-solid fa-truck-medical"></i></span>
+              <small>Emergency</small>
+            </a>
+            <a class="hs-side-link" href="prescriptions.html">
+              <span><i class="fa-solid fa-prescription-bottle-medical"></i></span>
+              <small>Prescriptions</small>
+            </a>
+          
+                        <a class="hs-side-link" href="form.html">
+              <span><i class="fa-solid fa-clipboard-list"></i></span>
+              <small>Form</small>
+            </a><a class="hs-side-link" href="profile.html">
+              <span><i class="fa-regular fa-user"></i></span>
+              <small>Profile</small>
+            </a>
+            </nav>
+
+          <section class="hs-main">
+            <div class="hs-brand-row">
+              <div class="hs-brand-logo"><i class="fa-solid fa-heart-pulse"></i></div>
+              <div class="hs-brand-name">HealthSphere</div>
+            </div>
+
+            <header class="hs-greet-row">
+              <div>
+                <p class="hs-hello">Section</p>
+                <h2 class="hs-name">Find Doctors</h2>
+              </div>
+            </header>
+
+            <section class="hs-location-card">
+              <div class="hs-location-row">
+                <div class="hs-location-icon"><i class="fa-solid fa-user-doctor"></i></div>
+                <div>
+                  <h4>Available Doctors</h4>
+                  <p>Browse and select doctors for appointments.</p>
+                </div>
+              </div>
+
+              <div class="hs-search-input" style="margin-bottom: 20px;">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input id="doctorSearchInput" class="input" type="text" placeholder="Search doctor by name or specialty" />
+              </div>
+
+              <div id="doctorGrid" class="hs-doctor-grid"></div>
+              
+              <div id="noDoctorsMessage" style="text-align: center; padding: 20px; color: #666; display: none;">
+                No doctors available or no matches found.
+              </div>
+
+              <div id="loadingMessage" style="text-align: center; padding: 20px; color: #666;">
+                Loading doctors...
+              </div>
+            </section>
+
+            <div id="doctorModal" class="hs-modal" aria-hidden="true" role="dialog" aria-modal="true">
+              <div class="hs-modal-card" role="document">
+                <button class="hs-modal-close" type="button" aria-label="Close doctor details">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+                <div class="hs-modal-head">
+                  <div class="hs-modal-avatar"><i class="fa-solid fa-user-doctor"></i></div>
+                  <div>
+                    <h3 id="doctorModalName">Doctor Name</h3>
+                    <p id="doctorModalSpecialty">Specialty</p>
+                  </div>
+                </div>
+                <div class="hs-modal-grid">
+                  <div><i class="fa-regular fa-clock"></i><span id="doctorModalExperience"></span></div>
+                  <div><i class="fa-solid fa-calendar-day"></i><span id="doctorModalAvailability"></span></div>
+                  <div><i class="fa-solid fa-phone"></i><span id="doctorModalPhone"></span></div>
+                  <div><i class="fa-solid fa-envelope"></i><span id="doctorModalEmail"></span></div>
+                </div>
+                <p id="doctorModalBio" class="hs-modal-bio"></p>
+                <div class="hs-modal-actions">
+                  <a id="bookAppointmentBtn" class="btn btn-primary" href="book_appointment.html">Book Appointment</a>
+                  <button id="closeDoctorModalBtn" class="btn btn-secondary" type="button">Close</button>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </div>
+    </article>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="script.js"></script>
+  <script>
+    (function () {
+      const SUPABASE_URL = "https://nfmzosvedtieicnfbmlh.supabase.co";
+      const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mbXpvc3ZlZHRpZWljbmZibWxoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMzk1MDgsImV4cCI6MjA5MDYxNTUwOH0.UWGk4L8AQu-5NfpknMKizvFmAcyX6QgUmqOGSr1G6Wc";
+
+      let allDoctors = [];
+      let doctorIndexMap = new Map();
+
+      function getSupabaseClient() {
+        if (typeof supabase === "undefined" || !supabase.createClient) {
+          console.error("Supabase library not loaded");
+          return null;
+        }
+        return supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+
+      async function loadDoctors() {
+        const supabaseClient = getSupabaseClient();
+        if (!supabaseClient) {
+          console.error("Cannot load doctors: Supabase not available");
+          document.getElementById("loadingMessage").textContent = "Error loading doctors";
+          return;
+        }
+
+        try {
+          const { data, error } = await supabaseClient
+            .from('doctor_profile')
+            .select('*')
+            .order('name', { ascending: true });
+
+          console.debug('Patient loadDoctors response:', { data, error });
+
+          if (error) {
+            console.error('Error loading doctors:', error);
+            document.getElementById("loadingMessage").textContent = "Error loading doctors";
+            return;
+          }
+
+          allDoctors = (data || []).map((doctor, index) => ({
+            ...doctor,
+            __index: index
+          }));
+          doctorIndexMap = new Map(allDoctors.map((doctor) => [String(doctor.__index), doctor]));
+          renderDoctors(allDoctors);
+        } catch (error) {
+          console.error('Error:', error);
+          document.getElementById("loadingMessage").textContent = "Error loading doctors";
+        }
+      }
+
+      function renderDoctors(doctors) {
+        const doctorGrid = document.getElementById("doctorGrid");
+        const loadingMessage = document.getElementById("loadingMessage");
+        const noDoctorsMessage = document.getElementById("noDoctorsMessage");
+
+        loadingMessage.style.display = "none";
+
+        if (!doctors || doctors.length === 0) {
+          doctorGrid.innerHTML = "";
+          noDoctorsMessage.style.display = "block";
+          return;
+        }
+
+        noDoctorsMessage.style.display = "none";
+        doctorGrid.innerHTML = doctors.map((doctor) => `
+          <article class="hs-doctor-card" role="button" tabindex="0" data-index="${doctor.__index}">
+            <div class="hs-doctor-head">
+              <div class="hs-doctor-icon">
+                <i class="fa-solid fa-user-doctor"></i>
+              </div>
+              <div>
+                <h3>${doctor.name || "Doctor"}</h3>
+                <p>${doctor.specialty || "Specialist"}</p>
+              </div>
+            </div>
+            <div class="hs-doctor-meta">
+              <span><i class="fa-regular fa-clock"></i> ${doctor.experience || "Experience not listed"}</span>
+              <span><i class="fa-solid fa-calendar-day"></i> ${doctor.availability || "Availability not listed"}</span>
+              <span><i class="fa-solid fa-phone"></i> ${doctor.phone || "Phone not listed"}</span>
+              <span><i class="fa-solid fa-envelope"></i> ${doctor.email || "Email not listed"}</span>
+            </div>
+            <p class="hs-doctor-bio">${doctor.bio || "Tap to view full profile and booking options."}</p>
+          </article>
+        `).join("");
+      }
+
+      function openDoctorModal(doctor) {
+        const modal = document.getElementById("doctorModal");
+        if (!doctor || !modal) {
+          return;
+        }
+
+        document.getElementById("doctorModalName").textContent = doctor.name || "Doctor";
+        document.getElementById("doctorModalSpecialty").textContent = doctor.specialty || "Specialist";
+        document.getElementById("doctorModalExperience").textContent = doctor.experience || "Experience not listed";
+        document.getElementById("doctorModalAvailability").textContent = doctor.availability || "Availability not listed";
+        document.getElementById("doctorModalPhone").textContent = doctor.phone || "Phone not listed";
+        document.getElementById("doctorModalEmail").textContent = doctor.email || "Email not listed";
+        document.getElementById("doctorModalBio").textContent = doctor.bio || "No additional bio provided yet.";
+
+        try {
+          sessionStorage.setItem("selectedDoctor", JSON.stringify(doctor));
+        } catch (error) {
+          console.warn("Could not store selected doctor:", error);
+        }
+
+        modal.classList.add("show");
+        modal.setAttribute("aria-hidden", "false");
+      }
+
+      function closeDoctorModal() {
+        const modal = document.getElementById("doctorModal");
+        if (!modal) return;
+        modal.classList.remove("show");
+        modal.setAttribute("aria-hidden", "true");
+      }
+
+      function filterDoctors() {
+        const searchValue = document.getElementById("doctorSearchInput").value.toLowerCase();
+        
+        if (!searchValue) {
+          renderDoctors(allDoctors);
+          return;
+        }
+
+        const filtered = allDoctors.filter((doctor) => {
+          return (
+            doctor.name.toLowerCase().includes(searchValue) ||
+            doctor.specialty.toLowerCase().includes(searchValue) ||
+            doctor.email.toLowerCase().includes(searchValue)
+          );
+        });
+
+        renderDoctors(filtered);
+      }
+
+      // Load doctors on page load
+      loadDoctors();
+
+      // Add search functionality
+      document.getElementById("doctorSearchInput").addEventListener("input", filterDoctors);
+
+      // Card click handling
+      const doctorGrid = document.getElementById("doctorGrid");
+      doctorGrid.addEventListener("click", (event) => {
+        const card = event.target.closest(".hs-doctor-card");
+        if (!card) return;
+        const doctor = doctorIndexMap.get(card.dataset.index);
+        openDoctorModal(doctor);
+      });
+
+      doctorGrid.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        const card = event.target.closest(".hs-doctor-card");
+        if (!card) return;
+        event.preventDefault();
+        const doctor = doctorIndexMap.get(card.dataset.index);
+        openDoctorModal(doctor);
+      });
+
+      // Modal close controls
+      const doctorModal = document.getElementById("doctorModal");
+      doctorModal.addEventListener("click", (event) => {
+        if (event.target === doctorModal) {
+          closeDoctorModal();
+        }
+      });
+
+      document.querySelector(".hs-modal-close").addEventListener("click", closeDoctorModal);
+      document.getElementById("closeDoctorModalBtn").addEventListener("click", closeDoctorModal);
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          closeDoctorModal();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
+
+
+

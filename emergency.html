@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Emergency - HealthSphere</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="single-wrap">
+    <article class="phone hs-home">
+      <div class="body">
+        <div class="hs-layout">
+          <nav class="hs-sidebar" aria-label="Home sections">
+            <a class="hs-side-link" href="patient_home.html">
+              <span><i class="fa-solid fa-house"></i></span>
+              <small>Home</small>
+            </a>
+            <a class="hs-side-link" href="ai.html">
+              <span><i class="fa-solid fa-robot"></i></span>
+              <small>AI Chatbot</small>
+            </a>
+            <a class="hs-side-link" href="doctors.html">
+              <span><i class="fa-solid fa-user-doctor"></i></span>
+              <small>Find Doctors</small>
+            </a>
+            <a class="hs-side-link" href="bed_availability.html">
+              <span><i class="fa-solid fa-bed"></i></span>
+              <small>Bed Availability</small>
+            </a>
+            <a class="hs-side-link" href="appointments.html">
+              <span><i class="fa-solid fa-calendar-check"></i></span>
+              <small>My Appointments</small>
+            </a>
+            <a class="hs-side-link active" href="emergency.html">
+              <span><i class="fa-solid fa-truck-medical"></i></span>
+              <small>Emergency</small>
+            </a>
+            <a class="hs-side-link" href="prescriptions.html">
+              <span><i class="fa-solid fa-prescription-bottle-medical"></i></span>
+              <small>Prescriptions</small>
+            </a>
+            <a class="hs-side-link" href="profile.html">
+              <span><i class="fa-regular fa-user"></i></span>
+              <small>Profile</small>
+            </a>
+          </nav>
+
+          <section class="hs-main">
+            <div class="hs-brand-row">
+              <div class="hs-brand-logo"><i class="fa-solid fa-heart-pulse"></i></div>
+              <div class="hs-brand-name">HealthSphere</div>
+            </div>
+
+            <header class="hs-greet-row">
+              <div>
+                <p class="hs-hello">Section</p>
+                <h2 class="hs-name">Emergency</h2>
+              </div>
+            </header>
+
+            <section id="emergencyLocationCard" class="hs-location-card">
+              <div class="hs-location-row">
+                <div class="hs-location-icon"><i class="fa-solid fa-location-dot"></i></div>
+                <div>
+                  <h4>Share Your Location</h4>
+                  <p id="emergencyLocationStatus">We need your location to dispatch help quickly.</p>
+                </div>
+              </div>
+              <button id="emergencyLocationBtn" class="btn btn-secondary" type="button">Allow Location Access</button>
+            </section>
+
+            <section class="hs-location-card">
+              <div class="hs-location-row">
+                <div class="hs-location-icon"><i class="fa-solid fa-truck-medical"></i></div>
+                <div>
+                  <h4>Immediate Help</h4>
+                  <p>Emergency actions will appear here.</p>
+                </div>
+              </div>
+              <div class="hs-emergency-actions">
+                <a class="hs-emergency-call" href="ambulance_hospitals.html">
+                  <i class="fa-solid fa-phone-volume" aria-hidden="true"></i>
+                  <span>Call Ambulance</span>
+                </a>
+                <p class="hs-emergency-note">Connect to the nearest emergency dispatch team.</p>
+              </div>
+            </section>
+
+            <section class="hs-location-card">
+              <div class="hs-location-row">
+                <div class="hs-location-icon"><i class="fa-solid fa-bell"></i></div>
+                <div>
+                  <h4>Ambulance Notification</h4>
+                  <p>Latest update from the hospital emergency desk.</p>
+                </div>
+              </div>
+              <div id="ambulanceNotificationCard" class="hs-notice-card is-pending">
+                <strong id="ambulanceNotificationTitle">No active ambulance updates</strong>
+                <p id="ambulanceNotificationText">Your request status and estimated arrival time will appear here.</p>
+              </div>
+            </section>
+
+            <section class="hs-location-card">
+              <div class="hs-location-row">
+                <div class="hs-location-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                <div>
+                  <h4>Previous Ambulance Requests</h4>
+                  <p>Recent requests and their status.</p>
+                </div>
+              </div>
+              <div id="ambulanceRequestsList" class="hs-recent-list" style="margin-top: 12px;"></div>
+              <div id="ambulanceRequestsEmpty" class="hs-recent-empty" style="display: none;">
+                No ambulance requests yet.
+              </div>
+            </section>
+          </section>
+        </div>
+      </div>
+    </article>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    (function () {
+      var SUPABASE_URL = "https://nfmzosvedtieicnfbmlh.supabase.co";
+      var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5mbXpvc3ZlZHRpZWljbmZibWxoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUwMzk1MDgsImV4cCI6MjA5MDYxNTUwOH0.UWGk4L8AQu-5NfpknMKizvFmAcyX6QgUmqOGSr1G6Wc";
+      var AMBULANCE_TABLE = "city_hospital_ambulance_requests";
+
+      function getSupabaseClient() {
+        if (typeof supabase === "undefined" || !supabase.createClient) {
+          return null;
+        }
+        return supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+
+      function formatDateTime(isoString) {
+        if (!isoString) return "Date: - | Time: -";
+        var date = new Date(isoString);
+        if (Number.isNaN(date.getTime())) return "Date: - | Time: -";
+        var formatter = new Intl.DateTimeFormat("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+        return formatter.format(date);
+      }
+
+      function statusClass(status) {
+        if (!status) return "pending";
+        var normalized = String(status).toLowerCase();
+        if (normalized === "confirmed" || normalized === "accepted" || normalized === "approved") return "accepted";
+        if (normalized === "cancelled" || normalized === "rejected" || normalized === "declined") return "rejected";
+        return "pending";
+      }
+
+      function escapeHtml(value) {
+        return String(value || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function buildNotification(request) {
+        var titleEl = document.getElementById("ambulanceNotificationTitle");
+        var textEl = document.getElementById("ambulanceNotificationText");
+        var cardEl = document.getElementById("ambulanceNotificationCard");
+        if (!titleEl || !textEl || !cardEl) return;
+
+        if (!request) {
+          cardEl.className = "hs-notice-card is-pending";
+          titleEl.textContent = "No active ambulance updates";
+          textEl.textContent = "Your request status and estimated arrival time will appear here.";
+          return;
+        }
+
+        var status = String(request.status || "pending").toLowerCase();
+        var eta = request.estimated_time || request.eta || "";
+        var note = request.response_note || request.note || "";
+        var hospital = request.hospital_name || "the hospital";
+
+        if (status === "accepted" || status === "approved" || status === "confirmed") {
+          cardEl.className = "hs-notice-card is-accepted";
+          titleEl.textContent = "Ambulance accepted by " + hospital;
+          textEl.textContent = eta
+            ? "Estimated arrival time: " + eta + ". " + (note || "The emergency team is on the way.")
+            : (note || "The hospital has accepted your ambulance request.");
+          return;
+        }
+
+        if (status === "rejected" || status === "declined" || status === "cancelled") {
+          cardEl.className = "hs-notice-card is-rejected";
+          titleEl.textContent = "Ambulance request was declined";
+          textEl.textContent = note || "Please try another hospital or contact emergency support immediately.";
+          return;
+        }
+
+        cardEl.className = "hs-notice-card is-pending";
+        titleEl.textContent = "Ambulance request pending review";
+        textEl.textContent = "The hospital emergency desk is verifying your request now.";
+      }
+
+      async function loadAmbulanceRequests() {
+        var listEl = document.getElementById("ambulanceRequestsList");
+        var emptyEl = document.getElementById("ambulanceRequestsEmpty");
+        if (!listEl || !emptyEl) return;
+
+        var client = getSupabaseClient();
+        if (!client) {
+          emptyEl.style.display = "block";
+          buildNotification(null);
+          return;
+        }
+
+        var userResult = await client.auth.getUser();
+        if (userResult.error || !userResult.data || !userResult.data.user) {
+          emptyEl.style.display = "block";
+          buildNotification(null);
+          return;
+        }
+
+        var result = await client
+          .from(AMBULANCE_TABLE)
+          .select("*")
+          .eq("user_id", userResult.data.user.id)
+          .order("created_at", { ascending: false })
+          .limit(6);
+
+        if (result.error || !result.data || result.data.length === 0) {
+          listEl.innerHTML = "";
+          emptyEl.style.display = "block";
+          buildNotification(null);
+          return;
+        }
+
+        emptyEl.style.display = "none";
+        buildNotification(result.data[0]);
+        listEl.innerHTML = result.data
+          .map(function (req) {
+            var status = statusClass(req.status);
+            var label = req.status ? String(req.status) : "pending";
+            var displayStatus = label.charAt(0).toUpperCase() + label.slice(1);
+            var etaLine = req.estimated_time || req.eta
+              ? "<span>ETA: " + escapeHtml(req.estimated_time || req.eta) + "</span>"
+              : "";
+            var noteLine = req.response_note || req.note
+              ? "<span>" + escapeHtml(req.response_note || req.note) + "</span>"
+              : "";
+            return (
+              "<div class=\"hs-recent-item\">" +
+              "<div>" +
+              "<strong>" + escapeHtml(req.hospital_name || "Hospital") + "</strong>" +
+              "<span>" + escapeHtml(formatDateTime(req.created_at)) + "</span>" +
+              etaLine +
+              noteLine +
+              "<span class=\"hs-status " + status + "\">" + escapeHtml(displayStatus) + "</span>" +
+              "</div>" +
+              "</div>"
+            );
+          })
+          .join("");
+      }
+
+      loadAmbulanceRequests();
+      window.setInterval(loadAmbulanceRequests, 15000);
+    })();
+  </script>
+  <script>
+    (function () {
+      var locationBtn = document.getElementById("emergencyLocationBtn");
+      var statusEl = document.getElementById("emergencyLocationStatus");
+
+      function setStatus(text) {
+        if (!statusEl) return;
+        statusEl.textContent = text;
+      }
+
+      function saveLocation(position) {
+        try {
+          localStorage.setItem("hsEmergencyLocation", JSON.stringify({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+            label: "Lat " + position.coords.latitude.toFixed(5) + ", Lng " + position.coords.longitude.toFixed(5)
+          }));
+        } catch (error) {
+          console.warn("Unable to save location", error);
+        }
+      }
+
+      if (!navigator.geolocation) {
+        setStatus("Location access is not supported in this browser.");
+        if (locationBtn) {
+          locationBtn.disabled = true;
+        }
+        return;
+      }
+
+      if (locationBtn) {
+        locationBtn.addEventListener("click", function () {
+          setStatus("Requesting location...");
+          navigator.geolocation.getCurrentPosition(
+            function (position) {
+              saveLocation(position);
+              setStatus("Location shared. Dispatch can locate you faster now.");
+            },
+            function () {
+              setStatus("Location access denied. You can still call for help.");
+            },
+            {
+              enableHighAccuracy: true,
+              timeout: 10000,
+              maximumAge: 0
+            }
+          );
+        });
+      }
+    })();
+  </script>
+</body>
+</html>
